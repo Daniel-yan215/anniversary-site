@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我们的三周年 · 恋爱时光博物馆</title>
+<style>
+/* ============================================================
+   全局样式 & CSS 变量
+   ============================================================ */
+:root {
+  --bg-start: #fce4ec;
+  --bg-mid:  #f8d8e0;
+  --bg-end:  #f3c4d4;
+  --text:     #4a2c2c;
+  --accent:   #b76e79;
+  --gold:     #c89a7a;
+  --card-bg:  rgba(255,240,245,0.85);
+  --shadow:   0 4px 20px rgba(180,120,130,0.25);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: Georgia, "Songti SC", "Noto Serif SC", "STSong", serif;
+  background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-mid) 40%, var(--bg-end) 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   Canvas 爱心粒子背景
+   ============================================================ */
+#heartsCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   主容器
+   ============================================================ */
+.main-container {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ============================================================
+   Hero 区域
+   ============================================================ */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.hero-icon {
+  font-size: 120px;
+  animation: heartbeat 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 8px 24px rgba(200,100,120,0.4));
+  cursor: default;
+  user-select: none;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.15); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  56% { transform: scale(1); }
+  70% { transform: scale(1.05); }
+  84% { transform: scale(1); }
+}
+
+.hero-title {
+  font-size: clamp(32px, 6vw, 56px);
+  color: var(--accent);
+  margin-top: 20px;
+  letter-spacing: 4px;
+  text-shadow: 0 2px 8px rgba(180,100,120,0.3);
+}
+
+.hero-subtitle {
+  font-size: clamp(18px, 3vw, 26px);
+  color: var(--gold);
+  margin-top: 10px;
+  letter-spacing: 6px;
+  font-style: italic;
+}
+
+.hero-date {
+  font-size: clamp(16px, 2.5vw, 22px);
+  color: var(--text);
+  margin-top: 30px;
+  padding: 12px 32px;
+  border: 2px dashed var(--gold);
+  border-radius: 40px;
+  display: inline-block;
+  opacity: 0.85;
+}
+
+/* 向下滚动提示 */
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  animation: floatArrow 2s ease-in-out infinite;
+}
+
+.scroll-hint span {
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+
+.scroll-hint .arrow {
+  font-size: 28px;
+  color: var(--accent);
+}
+
+@keyframes floatArrow {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(10px); opacity: 1; }
+}
+
+/* ============================================================
+   区块标题
+   ============================================================ */
+.section-title {
+  text-align: center;
+  font-size: clamp(24px, 4vw, 36px);
+  color: var(--accent);
+  margin: 60px 0 30px;
+  letter-spacing: 4px;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: var(--gold);
+  margin: 10px auto 0;
+  border-radius: 1px;
+}
+
+/* ============================================================
+   时间线
+   ============================================================ */
+.timeline {
+  position: relative;
+  padding: 40px 0;
+}
+
+/* 中间竖线 */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--accent) 0px,
+    var(--accent) 6px,
+    transparent 6px,
+    transparent 14px
+  );
+  opacity: 0.5;
+}
+
+.timeline-card {
+  position: relative;
+  width: 44%;
+  margin-bottom: 40px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(200,154,122,0.2);
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.timeline-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 奇数卡片在左 */
+.timeline-card:nth-child(odd) {
+  left: 0;
+  margin-right: auto;
+  text-align: right;
+}
+
+/* 偶数卡片在右 */
+.timeline-card:nth-child(even) {
+  left: 54%;
+  margin-left: auto;
+  text-align: left;
+}
+
+/* 卡片上的时间节点圆点 */
+.timeline-card::before {
+  content: '💕';
+  position: absolute;
+  top: 24px;
+  font-size: 18px;
+}
+
+.timeline-card:nth-child(odd)::before {
+  right: -38px;
+}
+
+.timeline-card:nth-child(even)::before {
+  left: -38px;
+}
+
+.timeline-card .card-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timeline-card .card-img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(180,120,130,0.35);
+}
+
+.timeline-card .card-date {
+  font-size: 14px;
+  color: var(--gold);
+  margin: 10px 0 4px;
+  letter-spacing: 1px;
+}
+
+.timeline-card .card-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* ============================================================
+   照片墙 (瀑布流)
+   ============================================================ */
+.photo-wall {
+  columns: 4;
+  column-gap: 16px;
+  padding: 0 8px;
+}
+
+.photo-card {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  box-shadow: 0 2px 12px rgba(160,100,110,0.2);
+}
+
+.photo-card:hover {
+  transform: scale(1.04);
+  box-shadow: 0 8px 28px rgba(160,100,110,0.4);
+}
+
+.photo-card img {
+  width: 100%;
+  display: block;
+  border-radius: 14px;
+}
+
+/* hover 遮罩 */
+.photo-card .photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(200,120,140,0.55);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  letter-spacing: 2px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  border-radius: 14px;
+}
+
+.photo-card:hover .photo-overlay {
+  opacity: 1;
+}
+
+/* ============================================================
+   视频区 - 复古电影院
+   ============================================================ */
+.cinema {
+  position: relative;
+  background: linear-gradient(180deg, #3d1c1c 0%, #5c2a2a 30%, #3d1c1c 100%);
+  border-radius: 20px;
+  padding: 40px 30px 30px;
+  margin: 30px 0;
+  box-shadow: 0 8px 40px rgba(80,30,30,0.4);
+}
+
+/* 帷幕 */
+.cinema::before,
+.cinema::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 28px;
+  background: linear-gradient(180deg,
+    #8b1a1a 0%, #6d1010 20%, #8b1a1a 40%, #5a0808 60%, #8b1a1a 80%, #6d1010 100%
+  );
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.cinema::before {
+  left: 8px;
+  box-shadow: inset -3px 0 8px rgba(0,0,0,0.5);
+}
+
+.cinema::after {
+  right: 8px;
+  box-shadow: inset 3px 0 8px rgba(0,0,0,0.5);
+}
+
+/* 胶片孔装饰 */
+.cinema-top {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.cinema-top .hole {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fce4ec;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+}
+
+/* 视频容器 */
+.cinema-screen {
+  position: relative;
+  margin: 0 auto 24px;
+  max-width: 640px;
+  z-index: 1;
+}
+
+.cinema-screen video {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+  box-shadow: 0 0 30px rgba(255,200,200,0.15);
+}
+
+.cinema-title {
+  text-align: center;
+  color: #f8d8e0;
+  font-size: 18px;
+  letter-spacing: 3px;
+  margin: 6px 0 20px;
+  font-style: italic;
+}
+
+/* ============================================================
+   结尾留言区
+   ============================================================ */
+.message-section {
+  text-align: center;
+  padding: 60px 20px 40px;
+}
+
+.message-heart {
+  font-size: 60px;
+  animation: heartbeat 1.2s ease-in-out infinite;
+  cursor: default;
+  user-select: none;
+}
+
+.message-text {
+  max-width: 600px;
+  margin: 30px auto;
+  font-size: clamp(16px, 2.5vw, 19px);
+  line-height: 2;
+  color: var(--text);
+  opacity: 0.9;
+}
+
+/* ============================================================
+   灯箱
+   ============================================================ */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,10,15,0.92);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.lightbox.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox img {
+  max-width: 88vw;
+  max-height: 85vh;
+  border-radius: 12px;
+  box-shadow: 0 8px 50px rgba(0,0,0,0.6);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.lightbox .close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 40px;
+  color: #fff;
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.2s;
+}
+
+.lightbox .close:hover { color: var(--accent); }
+
+.lightbox .nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 48px;
+  color: #fff;
+  cursor: pointer;
+  z-index: 10;
+  padding: 10px 16px;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.lightbox .nav-arrow:hover { color: var(--accent); }
+
+.lightbox .nav-left  { left: 20px; }
+.lightbox .nav-right { right: 20px; }
+
+/* ============================================================
+   音乐控制按钮
+   ============================================================ */
+.music-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  z-index: 100;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px rgba(180,100,120,0.5);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.music-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(180,100,120,0.6);
+}
+
+.music-btn.playing {
+  animation: pulseBtn 1.6s ease-in-out infinite;
+}
+
+@keyframes pulseBtn {
+  0%, 100% { box-shadow: 0 4px 18px rgba(180,100,120,0.5); }
+  50% { box-shadow: 0 4px 36px rgba(220,140,160,0.8); }
+}
+
+/* ============================================================
+   底部
+   ============================================================ */
+.footer {
+  text-align: center;
+  padding: 30px;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  opacity: 0.7;
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 768px) {
+  /* 时间线左对齐 */
+  .timeline::before {
+    left: 20px;
+  }
+
+  .timeline-card {
+    width: 85%;
+    left: 10% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    text-align: left !important;
+  }
+
+  .timeline-card::before {
+    left: -32px !important;
+    right: auto !important;
+  }
+
+  /* 照片墙列数减少 */
+  .photo-wall {
+    columns: 2;
+    column-gap: 10px;
+  }
+
+  .photo-card {
+    margin-bottom: 10px;
+  }
+
+  /* 电影院帷幕变小 */
+  .cinema::before,
+  .cinema::after {
+    width: 14px;
+  }
+  .cinema::before { left: 4px; }
+  .cinema::after  { right: 4px; }
+
+  .cinema {
+    padding: 30px 16px 20px;
+  }
+
+  .lightbox .nav-arrow {
+    font-size: 32px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .photo-wall {
+    columns: 1;
+  }
+
+  .hero-icon { font-size: 80px; }
+  .music-btn { width: 46px; height: 46px; font-size: 20px; bottom: 20px; right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     Canvas 爱心粒子背景
+     ============================================================ -->
+<canvas id="heartsCanvas"></canvas>
+
+<!-- ============================================================
+     音乐控制按钮
+     ============================================================ -->
+<button class="music-btn" id="musicBtn" title="播放/暂停音乐">🎵</button>
+
+<!-- ============================================================
+     灯箱组件
+     ============================================================ -->
+<div class="lightbox" id="lightbox">
+  <span class="close" id="lightboxClose">&times;</span>
+  <span class="nav-arrow nav-left" id="lightboxPrev">&#8249;</span>
+  <img src="" alt="" id="lightboxImg">
+  <span class="nav-arrow nav-right" id="lightboxNext">&#8250;</span>
+</div>
+
+<!-- ============================================================
+     主容器
+     ============================================================ -->
+<div class="main-container">
+
+  <!-- ======== Hero ======== -->
+  <section class="hero" id="hero">
+    <div class="hero-icon">💖</div>
+    <h1 class="hero-title">我们的三周年</h1>
+    <p class="hero-subtitle">恋爱时光博物馆</p>
+    <p class="hero-date">2023.07.05 — 2026.07.05</p>
+    <div class="scroll-hint" id="scrollHint">
+      <span>往下看</span>
+      <span class="arrow">↓</span>
+    </div>
+  </section>
+
+  <!-- ======== 时间线 ======== -->
+  <h2 class="section-title">我们的故事</h2>
+  <div class="timeline" id="timeline">
+    <!-- JS 动态插入 -->
+  </div>
+
+  <!-- ======== 照片墙 ======== -->
+  <h2 class="section-title">回忆相册</h2>
+  <div class="photo-wall" id="photoWall">
+    <!-- JS 动态插入 -->
+  </div>
+
+  <!-- ======== 视频区 ======== -->
+  <h2 class="section-title">影像记忆</h2>
+  <div class="cinema">
+    <div class="cinema-top">
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+      <span class="hole"></span><span class="hole"></span><span class="hole"></span>
+    </div>
+
+    <div class="cinema-screen">
+      <!--
+        替换方法：将 src 改成你自己的视频路径，例如：
+        src="videos/memory01.mp4"
+        支持的格式：MP4 (推荐), WebM, Ogg
+      -->
+      <video src="D:\claude test\videos\VID1..mp4">
+        您的浏览器不支持视频播放
+      </video>
+    </div>
+    <p class="cinema-title">健康步道快乐的一天</p>
+
+    <div class="cinema-screen">
+      <video src="D:\claude test\videos\VID2..mp4">
+        您的浏览器不支持视频播放
+      </video>
+    </div>
+    <p class="cinema-title">稻城亚丁旅行求婚</p>
+  </div>
+
+  <!-- ======== 留言区 ======== -->
+  <section class="message-section">
+    <div class="message-heart">💗</div>
+    <p class="message-text">
+      亲爱的，<br><br>
+      三年了，1095 个日夜。谢谢你出现在我的生命里，让每一天都变得闪闪发光。<br><br>
+      从第一眼心动到现在习惯有你，我们一起走过了很多路，看过了很多风景，也一起笑过、哭过、争吵过、和好过。<br><br>
+      你是我平淡生活里最惊喜的意外，是我面对未来时最笃定的底气。<br><br>
+      三周年快乐，未来的每一周年，我们都要一起过。<br><br>
+      永远爱你 ❤️
+    </p>
+  </section>
+
+  <!-- 底部 -->
+  <p class="footer">Made with 💕 · 我们的三周年 · 2026</p>
+
+</div>
+
+<script>
+/* ============================================================
+   全局配置对象 —— 修改这里的数据即可
+   ============================================================
+
+   如何替换照片：
+   1. 在项目目录下创建 images/photos/ 文件夹
+   2. 把你的照片放进去，命名随意（建议用 photo01.jpg, photo02.jpg ...）
+   3. 修改下方 CONFIG.timelineEvents 和 CONFIG.galleryPhotos 里的路径
+   4. 时间线卡片里的照片和照片墙的照片路径都在 CONFIG 里统一管理
+
+   如何替换视频：
+   1. 创建 videos/ 文件夹
+   2. 放入你的视频文件（推荐 .mp4）
+   3. 找到 HTML 中 <video src="..."> 替换 src
+   4. 也可以替换 poster（封面图）属性
+
+   如何替换音乐：
+   修改 CONFIG.musicSrc 为你的音乐文件路径
+   推荐 .mp3 或 .ogg 格式
+
+   如何部署到 GitHub Pages：
+   1. 在 GitHub 新建一个仓库（例如 my-love）
+   2. 把本文件和 images/videos/music 等资源一同上传到仓库
+   3. 进入仓库 → Settings → Pages
+   4. Source 选 "Deploy from a branch"，分支选 main，文件夹选 / (root)，点 Save
+   5. 几分钟后，访问 https://你的用户名.github.io/my-love/ 即可
+      （如果仓库名不是 my-love，请替换对应名称）
+   6. 如果希望用自定义域名，在 Pages 设置里填写 Custom domain 即可
+   ============================================================ */
+const CONFIG = {
+  // ---- 纪念日期 ----
+  startDate: '2023.07.05',
+  endDate:   '2026.07.05',
+
+  // ---- 时间线事件 (照片可点击放大) ----
+  timelineEvents: [
+    {
+      date: '2023.07.10',
+      img:  'images/photos/photo01.jpg',
+      text: '我们一起逛街'
+    },
+    {
+      date: '2023.10.15',
+      img:  'images/photos/photo02.jpg',
+      text: '我们一起散步去万达，你靠在我肩膀上像个小孩。'
+    },
+    {
+      date: '2024.06.09',
+      img:  'images/photos/photo05.jpg',
+      text: '宝宝终于带完高三，送你花花嘿嘿。'
+    },
+    {
+      date: '2024.07.06',
+      img:  'images/photos/photo03.jpg',
+      text: '一起去丹江参加婚礼。'
+    },
+    {
+      date: '2024.11.13',
+      img:  'images/photos/photo10.jpg',
+      text: '一起学游泳，我胆小不敢下水哈哈。'
+    },
+    {
+      date: '2025.06.29',
+      img:  'images/photos/photo12.jpg',
+      text: '我们去川西旅游，风景好漂亮，一切好像就在昨天。'
+    },
+    {
+      date: '2025.07.02',
+      img:  'images/photos/photo15.jpg',
+      text: '刚好快两周年啦，我偷偷准备在稻城亚丁向你求婚。'
+    },
+    {
+      date: '2026.07.05',
+      img:  'images/photos/photo16.jpg',
+      text: '三周年。写了这个网站送给你 ❤️'
+    }
+  ],
+
+  // ---- 照片墙图片 ----
+  galleryPhotos: [
+    'images/photos/photo01.jpg',
+    'images/photos/photo02.jpg',
+    'images/photos/photo03.jpg',
+    'images/photos/photo04.jpg',
+    'images/photos/photo05.jpg',
+    'images/photos/photo06.jpg',
+    'images/photos/photo07.jpg',
+    'images/photos/photo08.jpg',
+    'images/photos/photo09.jpg',
+    'images/photos/photo10.jpg',
+    'images/photos/photo11.jpg',
+    'images/photos/photo12.jpg',
+    'images/photos/photo13.jpg',
+    'images/photos/photo14.jpg',
+    'images/photos/photo15.jpg',
+    'images/photos/photo16.jpg',
+    'images/photos/photo17.jpg',
+    'images/photos/photo18.jpg',
+    'images/photos/photo19.jpg',
+    'images/photos/photo20.jpg'
+    // 继续添加你的照片路径即可，瀑布流会自动适应数量
+  ],
+
+  // ---- 音乐 (占位符，默认不自动播放) ----
+  musicSrc: 'music/bgm.mp3'  // 替换为你的背景音乐路径
+};
+
+/* ============================================================
+   Canvas 爱心粒子动画
+   ============================================================ */
+(function initHearts() {
+  const canvas = document.getElementById('heartsCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const maxParticles = 40;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function createParticle() {
+    return {
+      x: Math.random() * canvas.width,
+      y: -20,
+      size: Math.random() * 16 + 8,
+      speed: Math.random() * 1.2 + 0.4,
+      opacity: Math.random() * 0.5 + 0.3,
+      drift: (Math.random() - 0.5) * 0.6,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.02
+    };
+  }
+
+  // 初始化
+  for (let i = 0; i < maxParticles; i++) {
+    const p = createParticle();
+    p.y = Math.random() * canvas.height; // 随机初始高度
+    particles.push(p);
+  }
+
+  function drawHeart(ctx, x, y, size, rotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.scale(size / 24, size / 24);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(-6, -8, -18, 2, 0, 16);
+    ctx.bezierCurveTo(18, 2, 6, -8, 0, 0);
+    ctx.closePath();
+    ctx.restore();
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let p of particles) {
+      p.y += p.speed;
+      p.x += p.drift;
+      p.rotation += p.rotSpeed;
+
+      if (p.y > canvas.height + 30) {
+        Object.assign(p, createParticle());
+        p.y = -30;
+      }
+      if (p.x < -30) p.x = canvas.width + 30;
+      if (p.x > canvas.width + 30) p.x = -30;
+
+      ctx.fillStyle = `rgba(220,140,160,${p.opacity})`;
+      drawHeart(ctx, p.x, p.y, p.size, p.rotation);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+})();
+
+/* ============================================================
+   构建时间线卡片
+   ============================================================ */
+(function buildTimeline() {
+  const container = document.getElementById('timeline');
+  CONFIG.timelineEvents.forEach((evt, i) => {
+    const card = document.createElement('div');
+    card.className = 'timeline-card';
+    card.innerHTML = `
+      <img class="card-img" src="${evt.img}" alt="${evt.date}" loading="lazy"
+           data-lightbox="timeline" data-index="${i}">
+      <p class="card-date">${evt.date}</p>
+      <p class="card-text">${evt.text}</p>
+    `;
+    container.appendChild(card);
+  });
+})();
+
+/* ============================================================
+   构建照片墙
+   ============================================================ */
+(function buildPhotoWall() {
+  const container = document.getElementById('photoWall');
+  CONFIG.galleryPhotos.forEach((src, i) => {
+    const card = document.createElement('div');
+    card.className = 'photo-card';
+    card.innerHTML = `
+      <img src="${src}" alt="照片" loading="lazy" data-lightbox="gallery" data-index="${i}">
+      <div class="photo-overlay">💕 我们的回忆</div>
+    `;
+    container.appendChild(card);
+  });
+})();
+
+/* ============================================================
+   Intersection Observer - 滚动淡入
+   ============================================================ */
+(function initObserver() {
+  const cards = document.querySelectorAll('.timeline-card');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+
+  cards.forEach(card => observer.observe(card));
+})();
+
+/* ============================================================
+   灯箱逻辑
+   ============================================================ */
+(function initLightbox() {
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const closeBtn = document.getElementById('lightboxClose');
+  const prevBtn = document.getElementById('lightboxPrev');
+  const nextBtn = document.getElementById('lightboxNext');
+
+  let currentSource = null;   // 'timeline' | 'gallery'
+  let currentIndex = 0;
+
+  function getArray(source) {
+    if (source === 'timeline') return CONFIG.timelineEvents.map(e => e.img);
+    if (source === 'gallery') return CONFIG.galleryPhotos;
+    return [];
+  }
+
+  function showImage(src, index, source) {
+    lightboxImg.style.opacity = '0';
+    lightboxImg.style.transform = 'scale(0.92)';
+    setTimeout(() => {
+      lightboxImg.src = src;
+      lightboxImg.style.opacity = '1';
+      lightboxImg.style.transform = 'scale(1)';
+    }, 150);
+    currentSource = source;
+    currentIndex = index;
+  }
+
+  function openLightbox(src, index, source) {
+    lightbox.classList.add('active');
+    showImage(src, index, source);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function navigate(direction) {
+    const arr = getArray(currentSource);
+    if (!arr.length) return;
+    const newIndex = (currentIndex + direction + arr.length) % arr.length;
+    showImage(arr[newIndex], newIndex, currentSource);
+  }
+
+  // 绑定所有可点击图片
+  document.addEventListener('click', (e) => {
+    const img = e.target.closest('[data-lightbox]');
+    if (!img) return;
+    const source = img.dataset.lightbox;
+    const index = parseInt(img.dataset.index, 10);
+    openLightbox(img.src, index, source);
+  });
+
+  // 关闭
+  closeBtn.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  // 左右切换
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigate(-1); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); navigate(1); });
+
+  // 键盘控制
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') navigate(-1);
+    if (e.key === 'ArrowRight') navigate(1);
+  });
+})();
+
+/* ============================================================
+   滚动提示按钮
+   ============================================================ */
+(function initScrollHint() {
+  document.getElementById('scrollHint').addEventListener('click', () => {
+    document.getElementById('timeline').scrollIntoView({ behavior: 'smooth' });
+  });
+})();
+
+/* ============================================================
+   音乐控制
+   注意：浏览器通常会阻止自动播放，所以默认暂停。
+   用户点击按钮后才播放。
+   ============================================================ */
+(function initMusic() {
+  const btn = document.getElementById('musicBtn');
+  // 创建 audio 元素
+  const audio = new Audio(CONFIG.musicSrc);
+  audio.loop = true;
+  audio.volume = 0.5;
+  // preload 但不要 autoplay（避免被浏览器拦截）
+  audio.preload = 'auto';
+
+  btn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play().then(() => {
+        btn.classList.add('playing');
+        btn.textContent = '🎶';
+      }).catch(() => {
+        // 如果播放失败（文件不存在等），静默处理
+      });
+    } else {
+      audio.pause();
+      btn.classList.remove('playing');
+      btn.textContent = '🎵';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
